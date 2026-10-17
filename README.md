@@ -1,4 +1,4 @@
-﻿# Playwright Automation Framework - Automation Exercise Website
+# Playwright Automation Framework - Automation Exercise Website
 
 ## Project Overview
 
@@ -205,3 +205,16 @@ import { SEARCH_TERMS }         from '../utils/TestData/products';
 | Screenshots | On failure only |
 | Video | Retained on failure |
 | Reporting | Allure + HTML + List |
+
+---
+
+## 👨‍💻 Author
+
+**Mohamed Hussien Mohamed**
+*Test Automation Engineer | 6× ISTQB® Certified | AI Testing & Agent-Based Test Automation*
+
+- **LinkedIn**: [linkedin.com/in/mohamedhussien94](https://linkedin.com/in/mohamedhussien94)
+- **GitHub**: [@Mohamed94hussien](https://github.com/Mohamed94hussien)
+- **Email**: [mohamed94hussien@gmail.com](mailto:mohamed94hussien@gmail.com)
+- **Phone / WhatsApp**: [+20 101 780 1980](https://wa.me/2001017801980)
+
