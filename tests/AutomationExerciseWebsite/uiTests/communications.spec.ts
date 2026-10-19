@@ -12,14 +12,11 @@ test.describe('TC06 - Contact Us Form', () => {
     await expect(contactUsPage.heading).toBeVisible();
 
     await contactUsPage.fillForm(CONTACT_MESSAGE);
-
-    const filePath = path.join(__dirname, '../../../utils/test-upload.txt');
-    await contactUsPage.uploadFile(filePath);
-
+    await contactUsPage.uploadFile(path.join(__dirname, '../utils/TestData/test-upload.txt'));
     await contactUsPage.submit();
 
     await expect(contactUsPage.successAlert).toBeVisible();
     await contactUsPage.goHome();
-    await expect(page).toHaveURL('https://automationexercise.com/');
+    await expect(page).toHaveURL('/');
   });
 });

@@ -44,12 +44,4 @@ export class LoginPage extends BasePage {
     await this.signupBtn.click();
     await this.page.waitForURL('**/signup**');
   }
-
-  async isLoginErrorVisible(): Promise<boolean> {
-    return this.loginError.isVisible();
-  }
-
-  async isSignupErrorVisible(): Promise<boolean> {
-    return this.signupError.isVisible();
-  }
 }

@@ -1,5 +1,6 @@
 ﻿import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { UserData } from '../utils/TestData/users';
 
 interface AccountInfo {
   title?: 'Mr' | 'Mrs';
@@ -118,13 +119,24 @@ export class RegistrationPage extends BasePage {
     await this.mobileNumber.fill(mobile);
   }
 
+  /** Fills the whole "Enter Account Information" form for `user` and submits it. Expects to be on /signup. */
+  async register(user: UserData): Promise<void> {
+    await this.fillAccountInfo({
+      title: 'Mr', password: user.password,
+      day: user.dob.day, month: user.dob.month, year: user.dob.year,
+      newsletter: true, offers: true,
+    });
+    await this.fillAddressInfo({
+      firstName: user.firstName, lastName: user.lastName, company: user.company,
+      address1: user.address1, address2: user.address2, country: user.country,
+      state: user.state, city: user.city, zipcode: user.zipcode, mobile: user.mobile,
+    });
+    await this.createAccount();
+  }
+
   async createAccount(): Promise<void> {
     await this.createAccountBtn.click();
     await this.page.waitForURL('**/account_created**');
-  }
-
-  async isAccountCreated(): Promise<boolean> {
-    return this.accountCreatedMsg.isVisible();
   }
 
   async clickContinue(): Promise<void> {

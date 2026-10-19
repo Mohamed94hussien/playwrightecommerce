@@ -46,12 +46,8 @@ export class ContactUsPage extends BasePage {
     await this.submitBtn.click();
   }
 
-  async isSuccessVisible(): Promise<boolean> {
-    return this.successAlert.isVisible();
-  }
-
   async goHome(): Promise<void> {
     await this.homeBtn.click();
-    await this.page.waitForURL('https://automationexercise.com/');
+    await this.page.waitForURL('/');
   }
 }

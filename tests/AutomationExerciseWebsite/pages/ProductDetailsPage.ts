@@ -1,5 +1,6 @@
 ﻿import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { CartModal } from './components/CartModal';
 
 export class ProductDetailsPage extends BasePage {
   readonly productName: Locator;
@@ -8,9 +9,7 @@ export class ProductDetailsPage extends BasePage {
   readonly productBrand: Locator;
   readonly quantityInput: Locator;
   readonly addToCartBtn: Locator;
-  readonly addedToCartModal: Locator;
-  readonly modalContinue: Locator;
-  readonly modalViewCart: Locator;
+  readonly cartModal: CartModal;
   readonly reviewName: Locator;
   readonly reviewEmail: Locator;
   readonly reviewText: Locator;
@@ -26,14 +25,12 @@ export class ProductDetailsPage extends BasePage {
     this.productBrand     = page.locator('.product-information p').filter({ hasText: 'Brand:' });
     this.quantityInput    = page.locator('input#quantity');
     this.addToCartBtn     = page.locator('button.cart');
-    this.addedToCartModal = page.locator('#cartModal');
-    this.modalContinue    = page.locator('.modal-footer button:has-text("Continue Shopping")');
-    this.modalViewCart    = page.locator('#cartModal a:has-text("View Cart")');
+    this.cartModal        = new CartModal(page);
     this.reviewName       = page.locator('input#name');
     this.reviewEmail      = page.locator('input#email');
     this.reviewText       = page.locator('textarea#review');
     this.reviewSubmitBtn  = page.locator('button#button-review');
-    this.reviewSuccess    = page.locator('div.alert-success');
+    this.reviewSuccess    = page.locator('#review-section .alert-success');
     this.reviewLink       = page.locator('a[href="#reviews"]:has-text("Write Your Review")');
   }
 
@@ -53,17 +50,15 @@ export class ProductDetailsPage extends BasePage {
 
   async addToCart(): Promise<void> {
     await this.addToCartBtn.click();
-    await this.addedToCartModal.waitFor({ state: 'visible' });
+    await this.cartModal.waitForOpen();
   }
 
   async continueShopping(): Promise<void> {
-    await this.modalContinue.click();
-    await this.addedToCartModal.waitFor({ state: 'hidden' });
+    await this.cartModal.continueShopping();
   }
 
   async viewCart(): Promise<void> {
-    await this.modalViewCart.click();
-    await this.page.waitForURL('**/view_cart**');
+    await this.cartModal.viewCart();
   }
 
   async submitReview(name: string, email: string, review: string): Promise<void> {
@@ -71,9 +66,5 @@ export class ProductDetailsPage extends BasePage {
     await this.reviewEmail.fill(email);
     await this.reviewText.fill(review);
     await this.reviewSubmitBtn.click();
-  }
-
-  async isReviewSuccessVisible(): Promise<boolean> {
-    return this.reviewSuccess.isVisible();
   }
 }

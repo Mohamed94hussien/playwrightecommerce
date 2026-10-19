@@ -15,12 +15,12 @@
   dob: { day: string; month: string; year: string };
 }
 
-/** Generates a unique user object per test run to prevent conflicts */
+/** Generates a unique user object per call to prevent conflicts on the shared public site */
 export function generateUser(prefix: string = 'testuser'): UserData {
-  const unique = Date.now();
+  const unique = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   return {
-    name:      `_`,
-    email:     `_@test.com`,
+    name:      `${prefix}_${unique}`,
+    email:     `${prefix}_${unique}@test.com`,
     password:  'Test@1234',
     firstName: 'John',
     lastName:  'Doe',

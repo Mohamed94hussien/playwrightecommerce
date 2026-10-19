@@ -22,14 +22,6 @@ export class CheckoutPage extends BasePage {
     await this.waitForPageLoad();
   }
 
-  async getDeliveryAddressText(): Promise<string> {
-    return this.deliveryAddress.innerText();
-  }
-
-  async getBillingAddressText(): Promise<string> {
-    return this.billingAddress.innerText();
-  }
-
   async addComment(comment: string): Promise<void> {
     await this.commentTextarea.fill(comment);
   }
@@ -37,9 +29,5 @@ export class CheckoutPage extends BasePage {
   async placeOrder(): Promise<void> {
     await this.placeOrderBtn.click();
     await this.page.waitForURL('**/payment**');
-  }
-
-  async getOrderItemCount(): Promise<number> {
-    return this.orderProductNames.count();
   }
 }

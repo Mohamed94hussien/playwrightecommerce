@@ -1,5 +1,6 @@
 ﻿import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { CartModal } from './components/CartModal';
 
 export class HomePage extends BasePage {
   readonly navHome: Locator;
@@ -11,13 +12,14 @@ export class HomePage extends BasePage {
   readonly navContactUs: Locator;
   readonly navTestCases: Locator;
   readonly loggedInUser: Locator;
-  readonly subscriptionEmail: Locator;
-  readonly subscriptionBtn: Locator;
-  readonly subscriptionSuccess: Locator;
+  readonly accountDeletedHeading: Locator;
   readonly scrollUpBtn: Locator;
+  readonly slider: Locator;
   readonly womenCategory: Locator;
   readonly menCategory: Locator;
   readonly recommendedSection: Locator;
+  readonly recommendedAddToCartBtns: Locator;
+  readonly cartModal: CartModal;
 
   constructor(page: Page) {
     super(page);
@@ -30,13 +32,14 @@ export class HomePage extends BasePage {
     this.navContactUs     = page.locator('a[href="/contact_us"]').first();
     this.navTestCases     = page.locator('header a[href="/test_cases"]').first();
     this.loggedInUser     = page.locator('a:has-text("Logged in as")');
-    this.subscriptionEmail  = page.locator('#susbscribe_email');
-    this.subscriptionBtn    = page.locator('#subscribe');
-    this.subscriptionSuccess = page.locator('.alert-success');
+    this.accountDeletedHeading = page.locator('h2[data-qa="account-deleted"]');
     this.scrollUpBtn        = page.locator('#scrollUp');
+    this.slider             = page.locator('#slider-carousel');
     this.womenCategory      = page.locator('a[href="#Women"]');
     this.menCategory        = page.locator('a[href="#Men"]');
     this.recommendedSection = page.locator('#recommended-item-carousel');
+    this.recommendedAddToCartBtns = this.recommendedSection.locator('.item.active .add-to-cart');
+    this.cartModal          = new CartModal(page);
   }
 
   async goto(): Promise<void> {
@@ -69,13 +72,17 @@ export class HomePage extends BasePage {
     await this.page.waitForURL('**/test_cases**');
   }
 
-  async subscribeWithEmail(email: string): Promise<void> {
-    await this.subscriptionEmail.fill(email);
-    await this.subscriptionBtn.click();
+  /** Opens a sidebar category (e.g. Women) and then one of its sub-category links. */
+  async openCategory(category: Locator, subCategoryUrl: string): Promise<void> {
+    await category.click();
+    await this.page.locator(`a[href="${subCategoryUrl}"]`).click();
+    await this.page.waitForURL(`**${subCategoryUrl}`);
   }
 
-  async isLoggedIn(): Promise<boolean> {
-    return this.loggedInUser.isVisible();
+  async addFirstRecommendedToCart(): Promise<void> {
+    await this.recommendedSection.scrollIntoViewIfNeeded();
+    await this.recommendedAddToCartBtns.first().click();
+    await this.cartModal.waitForOpen();
   }
 
   async getLoggedInUsername(): Promise<string> {
@@ -87,7 +94,9 @@ export class HomePage extends BasePage {
     await this.navLogout.click();
   }
 
-  async scrollToBottom(): Promise<void> {
-    await this.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  /** Deletes the logged-in account through the UI. The header is present on every page. */
+  async deleteAccount(): Promise<void> {
+    await this.navDeleteAccount.click();
+    await this.page.waitForURL('**/delete_account**');
   }
 }

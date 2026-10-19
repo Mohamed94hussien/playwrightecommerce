@@ -7,6 +7,7 @@ A modern, scalable UI test automation framework built with **Playwright + TypeSc
 Key features:
 - Page Object Model (POM) with clean separation of concerns
 - Custom Playwright Fixtures for automatic page injection
+- Account fixtures that create/delete test users through the site's API, so accounts are cleaned up even when a test fails
 - Split test data management (users, products, messages, payment)
 - Global Setup for pre-test configuration
 - Allure + HTML reporting
@@ -44,6 +45,8 @@ playwright-automation-exercise/
 |       |   +-- BaseFixture.ts
 |       |
 |       +-- pages/
+|       |   +-- components/
+|       |   |   +-- CartModal.ts
 |       |   +-- BasePage.ts
 |       |   +-- HomePage.ts
 |       |   +-- LoginPage.ts
@@ -56,7 +59,6 @@ playwright-automation-exercise/
 |       |   +-- CartPage.ts
 |       |   +-- CheckoutPage.ts
 |       |   +-- PaymentPage.ts
-|       |   +-- CompletedOrderPage.ts
 |       |
 |       +-- uiTests/
 |       |   +-- authentication.spec.ts
@@ -67,6 +69,8 @@ playwright-automation-exercise/
 |       |   +-- scroll-tests.spec.ts
 |       |
 |       +-- utils/
+|           +-- Api/
+|           |   +-- accountApi.ts
 |           +-- Setup/
 |           |   +-- globalSetup.ts
 |           +-- TestData/
@@ -74,6 +78,7 @@ playwright-automation-exercise/
 |               +-- products.ts
 |               +-- messagesWithTitles.ts
 |               +-- paymentCard.ts
+|               +-- test-upload.txt
 |
 +-- allure-report/
 +-- allure-results/
@@ -88,7 +93,7 @@ playwright-automation-exercise/
 ## Quick Start
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 24+
 - npm
 
 ### Installation
@@ -120,6 +125,9 @@ npm run test:webkit
 npm run test:headed
 npm run test:ui
 npm run test:report
+
+# Static checks
+npm run typecheck
 ```
 
 ### Allure Reports
@@ -174,13 +182,32 @@ All page objects are pre-instantiated and injected. Tests declare what they need
 ```typescript
 import { test, expect } from '../fixtures/BaseFixture';
 
-test('Should login', async ({ homePage, loginPage }) => {
+test('Should show error for invalid login', async ({ homePage, loginPage }) => {
   await homePage.goto();
   await homePage.clickSignupLogin();
-  await loginPage.login(email, password);
-  await expect(homePage.loggedInUser).toBeVisible();
+  await loginPage.login('invalid_nobody@wrong.com', 'WrongPassword999');
+  await expect(loginPage.loginError).toBeVisible();
 });
 ```
+
+### Account Fixtures
+
+Tests that need a user ask for one instead of registering it by hand:
+
+| Fixture | Before the test | After the test |
+|---------|-----------------|----------------|
+| `newUser` | Generates unique, unregistered user data | Deletes the account via API if it exists |
+| `registeredUser` | Registers the user via `POST /api/createAccount` | Deletes the account via `DELETE /api/deleteAccount` |
+
+```typescript
+test('Should login', async ({ loginPage, homePage, registeredUser }) => {
+  await loginPage.goto();
+  await loginPage.login(registeredUser.email, registeredUser.password);
+  await expect(homePage.loggedInUser).toContainText(registeredUser.name);
+});
+```
+
+Teardown runs even when the test fails, so no orphaned accounts are left on the shared public site.
 
 ### Split Test Data
 
@@ -200,7 +227,7 @@ import { SEARCH_TERMS }         from '../utils/TestData/products';
 | Base URL | https://automationexercise.com |
 | Browsers | Chromium, WebKit |
 | Headless | true |
-| Retries | 1 (2 on CI) |
+| Retries | 0 locally (2 on CI) |
 | Workers | 1 (sequential) |
 | Screenshots | On failure only |
 | Video | Retained on failure |

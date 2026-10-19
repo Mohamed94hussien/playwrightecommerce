@@ -1,13 +1,6 @@
 ﻿import { Download, Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
-
-export interface PaymentDetails {
-  nameOnCard: string;
-  cardNumber: string;
-  cvc: string;
-  expiryMonth: string;
-  expiryYear: string;
-}
+import { PaymentCard } from '../utils/TestData/paymentCard';
 
 export class PaymentPage extends BasePage {
   readonly nameOnCard: Locator;
@@ -33,21 +26,17 @@ export class PaymentPage extends BasePage {
     this.continueBtn        = page.locator('a[data-qa="continue-button"]');
   }
 
-  async fillPaymentDetails(details: PaymentDetails): Promise<void> {
-    await this.nameOnCard.fill(details.nameOnCard);
-    await this.cardNumber.fill(details.cardNumber);
-    await this.cvc.fill(details.cvc);
-    await this.expiryMonth.fill(details.expiryMonth);
-    await this.expiryYear.fill(details.expiryYear);
+  async fillPaymentDetails(card: PaymentCard): Promise<void> {
+    await this.nameOnCard.fill(card.nameOnCard);
+    await this.cardNumber.fill(card.cardNumber);
+    await this.cvc.fill(card.cvc);
+    await this.expiryMonth.fill(card.expiryMonth);
+    await this.expiryYear.fill(card.expiryYear);
   }
 
   async payAndConfirm(): Promise<void> {
     await this.payAndConfirmBtn.click();
     await this.page.waitForURL('**/payment_done/**');
-  }
-
-  async isOrderPlaced(): Promise<boolean> {
-    return this.orderPlacedHeading.isVisible();
   }
 
   async downloadInvoice(): Promise<Download> {

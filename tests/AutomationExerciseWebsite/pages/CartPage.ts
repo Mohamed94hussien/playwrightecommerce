@@ -1,4 +1,4 @@
-﻿import { Locator, Page } from '@playwright/test';
+﻿import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class CartPage extends BasePage {
@@ -8,7 +8,7 @@ export class CartPage extends BasePage {
   readonly cartTotals: Locator;
   readonly deleteItemBtns: Locator;
   readonly emptyCartMsg: Locator;
-  readonly proceedCheckout: Locator;
+  readonly proceedCheckoutBtn: Locator;
   readonly checkoutModal: Locator;
   readonly checkoutModalLoginLink: Locator;
 
@@ -19,8 +19,8 @@ export class CartPage extends BasePage {
     this.cartQtys               = page.locator('.cart_quantity button');
     this.cartTotals             = page.locator('.cart_total p');
     this.deleteItemBtns         = page.locator('a.cart_quantity_delete');
-    this.emptyCartMsg           = page.locator('p:has-text("Cart is empty!")');
-    this.proceedCheckout        = page.locator('a.btn.btn-default.check_out');
+    this.emptyCartMsg           = page.locator('#empty_cart');
+    this.proceedCheckoutBtn     = page.locator('a.btn.btn-default.check_out');
     this.checkoutModal          = page.locator('#checkoutModal');
     this.checkoutModalLoginLink = page.locator('#checkoutModal a[href="/login"]');
   }
@@ -30,39 +30,34 @@ export class CartPage extends BasePage {
     await this.waitForPageLoad();
   }
 
-  async getCartItemCount(): Promise<number> {
-    return this.cartProductNames.count();
-  }
-
   async getCartItemNames(): Promise<string[]> {
     return this.cartProductNames.allInnerTexts();
   }
 
+  /** Removes one row and waits for the AJAX delete to take it out of the table. */
   async removeItem(index: number = 0): Promise<void> {
+    const before = await this.deleteItemBtns.count();
     await this.deleteItemBtns.nth(index).click();
-    await this.page.waitForTimeout(800);
+    await expect(this.deleteItemBtns).toHaveCount(before - 1);
   }
 
   async removeAllItems(): Promise<void> {
-    const count = await this.deleteItemBtns.count();
-    for (let i = count - 1; i >= 0; i--) {
-      await this.deleteItemBtns.nth(i).click();
-      await this.page.waitForTimeout(500);
+    while ((await this.deleteItemBtns.count()) > 0) {
+      await this.removeItem(0);
     }
   }
 
-  async isCartEmpty(): Promise<boolean> {
-    return this.emptyCartMsg.isVisible();
-  }
-
+  /** Proceeds to /checkout. Only valid for a logged-in user; guests get the login modal instead. */
   async proceedToCheckout(): Promise<void> {
-    await this.proceedCheckout.click();
+    await this.proceedCheckoutBtn.click();
+    await this.page.waitForURL('**/checkout**');
   }
 
-  async handleCheckoutLoginModal(): Promise<void> {
-    if (await this.checkoutModal.isVisible()) {
-      await this.checkoutModalLoginLink.click();
-      await this.page.waitForURL('**/login**');
-    }
+  /** As a guest: clicks Proceed To Checkout, waits for the login modal and follows it to /login. */
+  async proceedToCheckoutAsGuest(): Promise<void> {
+    await this.proceedCheckoutBtn.click();
+    await this.checkoutModal.waitFor({ state: 'visible' });
+    await this.checkoutModalLoginLink.click();
+    await this.page.waitForURL('**/login**');
   }
 }

@@ -1,16 +1,17 @@
-﻿import { test as base, Page } from '@playwright/test';
-import { HomePage }            from '../pages/HomePage';
-import { LoginPage }           from '../pages/LoginPage';
-import { RegistrationPage }    from '../pages/RegistrationPage';
-import { ProductsPage }        from '../pages/ProductsPage';
-import { ProductDetailsPage }  from '../pages/ProductDetailsPage';
+﻿import { test as base } from '@playwright/test';
+import { HomePage }             from '../pages/HomePage';
+import { LoginPage }            from '../pages/LoginPage';
+import { RegistrationPage }     from '../pages/RegistrationPage';
+import { ProductsPage }         from '../pages/ProductsPage';
+import { ProductDetailsPage }   from '../pages/ProductDetailsPage';
 import { CategoryProductsPage } from '../pages/CategoryProductsPage';
-import { BrandProductsPage }   from '../pages/BrandProductsPage';
-import { ContactUsPage }       from '../pages/ContactUsPage';
-import { CartPage }            from '../pages/CartPage';
-import { CheckoutPage }        from '../pages/CheckoutPage';
-import { PaymentPage }         from '../pages/PaymentPage';
-import { CompletedOrderPage }  from '../pages/CompletedOrderPage';
+import { BrandProductsPage }    from '../pages/BrandProductsPage';
+import { ContactUsPage }        from '../pages/ContactUsPage';
+import { CartPage }             from '../pages/CartPage';
+import { CheckoutPage }         from '../pages/CheckoutPage';
+import { PaymentPage }          from '../pages/PaymentPage';
+import { generateUser, UserData } from '../utils/TestData/users';
+import { createAccountViaApi, deleteAccountViaApi } from '../utils/Api/accountApi';
 
 type PageFixtures = {
   homePage:             HomePage;
@@ -24,14 +25,21 @@ type PageFixtures = {
   cartPage:             CartPage;
   checkoutPage:         CheckoutPage;
   paymentPage:          PaymentPage;
-  completedOrderPage:   CompletedOrderPage;
+};
+
+type AccountFixtures = {
+  /** Fresh, not-yet-registered user data. Deleted via the API after the test if the test registered it. */
+  newUser:        UserData;
+  /** A user already registered via the API before the test. Deleted via the API after the test. */
+  registeredUser: UserData;
 };
 
 /**
- * Extended Playwright test fixture that pre-instantiates all page objects.
- * Import 	est from this file instead of @playwright/test in spec files.
+ * Extended Playwright test fixture that pre-instantiates all page objects
+ * and manages test accounts so they are cleaned up even when a test fails.
+ * Import `test` from this file instead of @playwright/test in spec files.
  */
-export const test = base.extend<PageFixtures>({
+export const test = base.extend<PageFixtures & AccountFixtures>({
   homePage: async ({ page }, use) => {
     await use(new HomePage(page));
   },
@@ -65,8 +73,17 @@ export const test = base.extend<PageFixtures>({
   paymentPage: async ({ page }, use) => {
     await use(new PaymentPage(page));
   },
-  completedOrderPage: async ({ page }, use) => {
-    await use(new CompletedOrderPage(page));
+
+  newUser: async ({ request }, use, testInfo) => {
+    const user = generateUser(testInfo.project.name);
+    await use(user);
+    await deleteAccountViaApi(request, user);
+  },
+  registeredUser: async ({ request }, use, testInfo) => {
+    const user = generateUser(testInfo.project.name);
+    await createAccountViaApi(request, user);
+    await use(user);
+    await deleteAccountViaApi(request, user);
   },
 });
 
