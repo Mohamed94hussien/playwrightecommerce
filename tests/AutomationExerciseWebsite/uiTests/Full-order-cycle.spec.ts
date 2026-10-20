@@ -38,9 +38,9 @@ test.describe('TC12 - Add Products to Cart', () => {
   test('Should add multiple products and verify cart', async ({ cartPage, productsPage, homePage }) => {
     await homePage.goto();
     await homePage.clickProducts();
-    await productsPage.hoverAndAddToCart(0);
+    await productsPage.addToCart(0);
     await productsPage.continueShopping();
-    await productsPage.hoverAndAddToCart(1);
+    await productsPage.addToCart(1);
     await productsPage.viewCartFromModal();
     await expect(cartPage.cartProductNames).toHaveCount(2);
     await expect(cartPage.cartQtys.first()).toBeVisible();
@@ -122,7 +122,7 @@ test.describe('TC17 - Remove Products from Cart', () => {
   test('Should remove a product from the cart', async ({ homePage, productsPage, cartPage }) => {
     await homePage.goto();
     await homePage.clickProducts();
-    await productsPage.hoverAndAddToCart(0);
+    await productsPage.addToCart(0);
     await productsPage.viewCartFromModal();
     await expect(cartPage.cartProductNames).toHaveCount(1);
 

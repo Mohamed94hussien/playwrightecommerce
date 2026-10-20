@@ -13,6 +13,8 @@ import { PaymentPage }          from '../pages/PaymentPage';
 import { generateUser, UserData } from '../utils/TestData/users';
 import { createAccountViaApi, deleteAccountViaApi } from '../utils/Api/accountApi';
 
+const AD_HOSTS = /^https?:\/\/([^/]+\.)?(googlesyndication\.com|doubleclick\.net|googleadservices\.com|adservice\.google\.com|google-analytics\.com|googletagmanager\.com|fundingchoicesmessages\.google\.com)\//;
+
 type PageFixtures = {
   homePage:             HomePage;
   loginPage:            LoginPage;
@@ -40,6 +42,13 @@ type AccountFixtures = {
  * Import `test` from this file instead of @playwright/test in spec files.
  */
 export const test = base.extend<PageFixtures & AccountFixtures>({
+  // The site serves Google ads, including full-screen vignettes that cover the page and hijack
+  // navigation. Block them for every page in the context so they can't intercept clicks.
+  context: async ({ context }, use) => {
+    await context.route(AD_HOSTS, (route) => route.abort());
+    await use(context);
+  },
+
   homePage: async ({ page }, use) => {
     await use(new HomePage(page));
   },

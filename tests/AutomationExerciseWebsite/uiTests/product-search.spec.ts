@@ -45,7 +45,7 @@ test.describe('TC20 - Search Product and Verify in Cart after Login', () => {
 
     const addedNames = (await productsPage.productNames.allInnerTexts()).slice(0, 2);
     for (let i = 0; i < addedNames.length; i++) {
-      await productsPage.hoverAndAddToCart(i);
+      await productsPage.addToCart(i);
       await productsPage.continueShopping();
     }
 

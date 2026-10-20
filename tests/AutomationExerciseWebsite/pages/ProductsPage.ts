@@ -23,7 +23,7 @@ export class ProductsPage extends BasePage {
     this.searchedProducts = page.locator('.features_items .product-image-wrapper');
     this.searchHeading    = page.locator('h2.title:has-text("Searched Products")');
     this.viewProductBtns  = page.locator('a[href*="/product_details/"]');
-    this.addToCartBtns    = page.locator('.features_items .product-overlay a.add-to-cart');
+    this.addToCartBtns    = page.locator('.features_items .productinfo a.add-to-cart');
     this.brandLinks       = page.locator('.brands-name ul li a');
     this.cartModal        = new CartModal(page);
   }
@@ -44,8 +44,8 @@ export class ProductsPage extends BasePage {
     await this.page.waitForURL('**/product_details/**');
   }
 
-  async hoverAndAddToCart(index: number = 0): Promise<void> {
-    await this.productCards.nth(index).hover();
+  /** Clicks the card's own "Add to cart" button, which is always visible (no hover over the overlay needed). */
+  async addToCart(index: number = 0): Promise<void> {
     await this.addToCartBtns.nth(index).click();
     await this.cartModal.waitForOpen();
   }
@@ -61,7 +61,7 @@ export class ProductsPage extends BasePage {
   /** Adds the first product on /products to the cart and lands on /view_cart. */
   async addFirstProductAndViewCart(): Promise<void> {
     await this.goto();
-    await this.hoverAndAddToCart(0);
+    await this.addToCart(0);
     await this.viewCartFromModal();
   }
 }
