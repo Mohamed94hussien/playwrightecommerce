@@ -170,8 +170,10 @@ test.describe('TC24 - Download Invoice after Purchase', () => {
     await cartPage.proceedToCheckout();
     await placeOrderAndPay(checkoutPage, paymentPage, 'TC24 invoice order');
 
-    const download = await paymentPage.downloadInvoice();
-    expect(download.suggestedFilename()).toMatch(/invoice/i);
+    const invoice = await paymentPage.fetchInvoice();
+    expect(invoice.filename).toBe('invoice.txt');
+    expect(invoice.body).toContain(`${newUser.firstName} ${newUser.lastName}`);
+    expect(invoice.body).toMatch(/total purchase amount is \d+/);
     await paymentPage.clickContinue();
 
     await homePage.deleteAccount();
