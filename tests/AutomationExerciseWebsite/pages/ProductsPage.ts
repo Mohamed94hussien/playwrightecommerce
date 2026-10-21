@@ -36,6 +36,9 @@ export class ProductsPage extends BasePage {
   async searchProduct(term: string): Promise<void> {
     await this.searchInput.fill(term);
     await this.searchBtn.click();
+    // The heading renders before cart.js (end of <body>) binds the "Add to cart" handlers,
+    // so wait for DOMContentLoaded or an immediate add-to-cart click is silently ignored.
+    await this.page.waitForURL(/\/products\?search=/, { waitUntil: 'domcontentloaded' });
     await this.searchHeading.waitFor({ state: 'visible', timeout: 10_000 });
   }
 
